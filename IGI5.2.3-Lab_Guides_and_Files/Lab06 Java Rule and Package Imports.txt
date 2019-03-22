@@ -1,0 +1,39 @@
+RULE CONTENT
+------------
+
+
+when
+    userBean : UserBean(  )                     // Get the user of the Add_User 
+    orgUnitBean : OrgUnitBean(  )               // Get the org unit of the user  
+    externalInfo : ExternalInfo(  )  
+    userErcBean : UserErcBean(  )
+then
+  logger.info("User to process : " + userBean.getCode()); // Log the user to be processed
+  
+  AccountBean userAccount = new AccountBean(); 
+  userAccount.setPwdcfg_id(1L);                  // IDEAS cfg, ID=1
+
+  // Search the users accounts and filter for the IGI account
+
+  BeanList accounts = UserAction.findAccount(sql, userBean, userAccount);
+  userAccount = (AccountBean) accounts.get(0);  
+  
+  // Expiration IGI account after 5 minutes
+
+  Calendar currentTime = Calendar.getInstance(); //Get the Current Time 
+  currentTime.add(Calendar.MINUTE, 5);           // Add 5 minute
+  Date newEntDate = currentTime.getTime();       //Set the new time
+  
+  logger.info("Exp Date:  " + newEntDate);       // Log the expiration date/time
+  
+  userAccount.setExpire(newEntDate);             // Set the account expiration attribute
+  logger.info("Expiration Date set!!!!");        // Log that it set
+  UserAction.updateAccount(sql, userAccount );   // Update the users IGI account
+
+
+PACKAGE IMPORTS
+---------------
+
+import java.util.Calendar
+import java.util.Date 
+
