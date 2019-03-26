@@ -1,0 +1,84 @@
+This file contains text that needs to be copied into the IGI UI. It is saved here so you can open the file in the Common Jumpserver image and directly copy'n'paste.
+
+SECTION 3.3.2.2 - Setup for Account Attribute Mapping
+-----------------------------------------------------
+
+Default Values (strings and/or User.field value)...
+
+cn: {Master UID}
+description: AD Account provisioned from IGI for {First Name} {Last Name}
+erADDisplayName: {First Name} {Last Name}
+erADEmployeeID: Employee ID	{SSN/Fiscal Code}
+erADFullName: {First Name} {Last Name}
+erCompany: Company	ACME Ltd.
+erDepartment: {ATTR4}
+givenName: {First Name}
+mail: {Email}
+postalCode: {Zip/Postal Code}
+sn: {Last Name}
+street: {Address}
+telephoneNumber: {Phone Number}
+title: {ATTR10}
+
+
+SECTION 3.3.5.2 Create the Account Modify Rule
+----------------------------------------------
+
+Package Imports...
+Add import com.engiweb.profilemanager.common.bean.ExternalInfo after the import com.engiweb.profilemanager.common.bean.UserBean
+Add the following lines after the import common.direct.DirectFactory and before the first global statement; import java.text.SimpleDateFormat and import java.util.Calendar
+
+Rule Package...
+when
+    event : EventTargetBean(  )
+    userBean : UserBean(  )
+    orgUnitBean : OrgUnitBean(  )
+    accountBean : AccountBean(  )
+    accountAttrValue : AccountAttrValueList(  )
+then
+//
+// UserERC key attribute used for fake enforce!
+final String ENFORCE_KEY = "AcctLastRecon";
+
+// If Identity not found exit
+if (userBean == null || userBean.getId() == null) {
+	logger.info("No Identity found for account: " +accountBean.getCode());
+	return;
+}
+
+logger.info("Identity to update to push Enforcing :" + userBean.getCode());
+
+// Get Identity ExternalInfo
+ExternalInfo userExternalInfo = UserAction.findExternalInfo(sql, userBean);
+
+// Get todays date and time
+Calendar currentTime = Calendar.getInstance();
+String stringDate = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(currentTime.getTime());
+
+logger.info("!!! Current Time:  " + stringDate);
+
+// Get Current Key value
+try {
+	String value = (String) userExternalInfo.getAttribute(ENFORCE_KEY);
+	logger.info("Previous Recon Date :" + value);
+} catch (Exception ex) {
+	// Skip and set 0
+}
+
+// Set the new value
+userExternalInfo.setAttribute(ENFORCE_KEY, stringDate);
+
+// Update all user attributes
+UserAction.modifyUser(sql, userBean, userExternalInfo);
+
+logger.info("Identity Updated!");
+
+
+SECTION 4.2.2.1 Define a User Virtual View
+------------------------------------------
+
+You will need the following values...
+Driver: com.ibm.db2.jcc.DB2Driver
+URL: jdbc:db2://192.168.42.65:50000/IGI_DB
+
+The other values you can type in.

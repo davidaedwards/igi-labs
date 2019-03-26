@@ -1,0 +1,1 @@
+A new IGI $P{report.name} report is availableYou received this e-mail because a new $P{report.category} report was generated. It contains $P{report.rowcount} records and is in $P{report.format} format.Details		${details}Please go to the IBM Security Identity Governance and Intelligence application to download the report.
